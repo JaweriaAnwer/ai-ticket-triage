@@ -2,6 +2,41 @@
 
 Nova is a comprehensive, intelligent platform designed to unify and triage engineering support tickets across multiple sources (GitHub, Zendesk, Jira, Intercom, etc.). By leveraging advanced semantic clustering and AI-driven classification, Nova helps engineering teams slice through the noise and focus on what truly matters: resolving critical issues and shipping features.
 
+## 🏗️ Architecture
+
+```text
+┌──────────────────────────────────────────────────────┐
+│                    React Frontend                    │
+│    (Vite + React 19 + Tailwind + Framer Motion)      │
+│   Landing Page │ Global Inbox │ Semantic Clusters    │
+└────────────┬────────────┬────────────┬───────────────┘
+             │  REST API  │            │
+             ▼            ▼            ▼
+┌──────────────────────────────────────────────────────┐
+│                  Python Backend                      │
+│                                                      │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────┐  │
+│  │ AI Routing  │  │  Sentiment   │  │  Semantic   │  │
+│  │   Service   │  │   Analyzer   │  │  Clustering │  │
+│  │ (Categorize)│  │  (Urgency)   │  │ (Embeddings)│  │
+│  └──────┬──────┘  └──────┬───────┘  └──────┬──────┘  │
+│         │                │                 │         │
+│         ▼                ▼                 ▼         │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │      Vector Search Engine & Data Access         │ │
+│  │      (Cosine similarity & aggregations)         │ │
+│  └─────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────┘
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │   Database Layer    │
+              │   PostgreSQL DB     │
+              │   with pgvector     │
+              │ Ticket Embeddings   │
+              └─────────────────────┘
+```
+
 ## 🎯 The Problem
 
 Engineering teams are constantly bombarded by bug reports, feature requests, and support tickets from a wide variety of disconnected platforms. This fragmentation leads to:
