@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle2, ChevronRight, Clock, MessageSquare, Tag, Zap
 import { TicketDrawer } from "../components/TicketDrawer";
 import { CreateTicketModal } from "../components/CreateTicketModal";
 import { AnimatedMetricCard } from "../components/AnimatedMetricCard";
+import { API_BASE_URL } from "../lib/api";
 
 interface Ticket {
   id: number;
@@ -46,7 +47,7 @@ export function Dashboard() {
   const q = searchParams.get("q");
 
   const fetchTickets = () => {
-    const url = q ? `http://localhost:8000/api/tickets?q=${encodeURIComponent(q)}` : "http://localhost:8000/api/tickets";
+    const url = q ? `${API_BASE_URL}/api/tickets?q=${encodeURIComponent(q)}` : `${API_BASE_URL}/api/tickets`;
     setLoading(true);
     fetch(url)
       .then(res => res.json())
@@ -101,7 +102,7 @@ export function Dashboard() {
       <div className="flex-1 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg flex flex-col relative z-10">
         
         {/* Table Header with Source Filter */}
-        <div className="px-4 py-3 border-b border-[var(--color-border)] flex items-center justify-between bg-[var(--color-surface)] rounded-t-lg">
+        <div className="px-4 py-3 border-b border-[var(--color-border)] flex items-center justify-between bg-[var(--color-surface)] rounded-t-lg relative z-20">
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-medium">Recent Activity</h2>
             <span className="text-xs text-[var(--color-text-secondary)] bg-[var(--color-background)] border border-[var(--color-border)] px-2 py-0.5 rounded">
@@ -121,7 +122,7 @@ export function Dashboard() {
             </button>
 
             {isFilterOpen && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-xl z-50 overflow-hidden">
+              <div className="absolute right-0 top-full mt-1 w-48 bg-[#1c1f26] border border-[var(--color-border)] rounded-lg shadow-2xl z-50 overflow-hidden">
                 {SOURCE_FILTERS.map(f => (
                   <button
                     key={f.value}

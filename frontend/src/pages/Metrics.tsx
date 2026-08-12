@@ -4,6 +4,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from "recharts";
 import { Activity, AlertTriangle, MessageSquare } from "lucide-react";
+import { API_BASE_URL } from "../lib/api";
 import { AnimatedDonutChart } from "../components/AnimatedDonutChart";
 import { AnimatedBarChart } from "../components/AnimatedBarChart";
 import { AnimatedHorizontalBarChart } from "../components/AnimatedHorizontalBarChart";
@@ -39,10 +40,10 @@ export function Metrics() {
     async function fetchAnalytics() {
       try {
         const [sumRes, catRes, volRes, urgRes] = await Promise.all([
-          fetch("http://localhost:8000/api/analytics/summary"),
-          fetch("http://localhost:8000/api/analytics/categories"),
-          fetch("http://localhost:8000/api/analytics/volume"),
-          fetch("http://localhost:8000/api/analytics/urgency")
+          fetch(`${API_BASE_URL}/api/analytics/summary`),
+          fetch(`${API_BASE_URL}/api/analytics/categories`),
+          fetch(`${API_BASE_URL}/api/analytics/volume`),
+          fetch(`${API_BASE_URL}/api/analytics/urgency`)
         ]);
 
         setSummary(await sumRes.json());

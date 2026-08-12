@@ -1,6 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+import json
+import os
+import requests
+
 from database import get_db
 from models import Ticket
 from services.github_service import GitHubService
@@ -11,6 +15,92 @@ router = APIRouter(
     tags=["integrations"]
 )
 
+SETTINGS_FILE = "n8n_settings.json"
+
+def get_n8n_webhook_url():
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, "r") as f:
+                return json.load(f).get("n8n_webhook_url")
+        except:
+            pass
+    return None
+
+def set_n8n_webhook_url(url: str):
+    data = {}
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, "r") as f:
+                data = json.load(f)
+        except:
+            pass
+    data["n8n_webhook_url"] = url
+    with open(SETTINGS_FILE, "w") as f:
+        json.dump(data, f)
+
+
+def fire_n8n_webhook(ticket: Ticket):
+    """
+    Fires a single ticket's data to the configured n8n webhook URL, if any.
+    Shared by both the GitHub sync flow and manual ticket creation (tickets.py)
+    so every ticket entry-point notifies n8n the same way.
+    Fails silently (logs only) so a down/misconfigured n8n instance never
+    blocks ticket ingestion.
+    """
+    webhook_url = get_n8n_webhook_url()
+    if not webhook_url:
+        return False
+
+    try:
+        response = requests.post(webhook_url, json={
+            "id": f"T-{ticket.id}",
+            "summary": ticket.summary,
+            "urgency": ticket.urgency,
+            "category": ticket.category.value if hasattr(ticket.category, "value") else ticket.category,
+            "sentiment_score": ticket.sentiment_score,
+            "source": ticket.source,
+            "status": ticket.status,
+        }, timeout=3)
+        response.raise_for_status()
+        return True
+    except Exception as e:
+        print(f"Failed to trigger n8n webhook for ticket {ticket.id}: {e}")
+        return False
+
+
+class WebhookRequest(BaseModel):
+    webhook_url: str
+
+@router.get("/n8n/webhook")
+def get_webhook():
+    return {"webhook_url": get_n8n_webhook_url() or ""}
+
+@router.post("/n8n/webhook")
+def set_webhook(request: WebhookRequest):
+    set_n8n_webhook_url(request.webhook_url)
+    return {"message": "Saved"}
+
+@router.post("/n8n/test")
+def test_webhook():
+    url = get_n8n_webhook_url()
+    if not url:
+        raise HTTPException(status_code=400, detail="Webhook URL not set")
+    
+    mock_ticket = {
+        "id": "T-TEST",
+        "summary": "This is a test ticket from Nova",
+        "urgency": "high",
+        "category": "bug",
+        "sentiment_score": -0.85
+    }
+    try:
+        response = requests.post(url, json=mock_ticket, timeout=5)
+        response.raise_for_status()
+        return {"message": "Success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 class SyncRequest(BaseModel):
     repository: str  # e.g. "facebook/react"
     limit: int = 5
@@ -19,7 +109,7 @@ class SyncRequest(BaseModel):
 def sync_github_issues(request: SyncRequest, db: Session = Depends(get_db)):
     """
     Fetches issues from GitHub, processes them through the AI pipeline,
-    and saves them to the database.
+    saves them to the database, and fires n8n webhooks.
     """
     try:
         # 1. Fetch from GitHub REST API (public, no auth needed)
@@ -28,7 +118,7 @@ def sync_github_issues(request: SyncRequest, db: Session = Depends(get_db)):
         if not issues:
             return {"message": "No issues found or repository invalid", "imported": 0}
 
-        imported_count = 0
+        new_tickets = []
 
         for issue in issues:
             raw_text = f"{issue['title']}\n\n{issue['body']}"
@@ -58,10 +148,16 @@ def sync_github_issues(request: SyncRequest, db: Session = Depends(get_db)):
                 status="open"
             )
             db.add(new_ticket)
-            imported_count += 1
+            new_tickets.append(new_ticket)
 
         db.commit()
-        return {"message": "Sync successful", "imported": imported_count}
+
+        # Fire n8n webhooks for each newly-synced ticket
+        for t in new_tickets:
+            db.refresh(t)
+            fire_n8n_webhook(t)
+
+        return {"message": "Sync successful", "imported": len(new_tickets)}
 
     except Exception as e:
         db.rollback()

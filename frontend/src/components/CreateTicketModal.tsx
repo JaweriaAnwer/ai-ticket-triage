@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, Send } from "lucide-react";
 import { NovaNotification } from "./NovaNotification";
+import { API_BASE_URL } from "../lib/api";
 
 interface CreateTicketModalProps {
   isOpen: boolean;
@@ -27,7 +28,7 @@ export function CreateTicketModal({ isOpen, onClose, onSuccess }: CreateTicketMo
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:8000/api/tickets", {
+      const response = await fetch(`${API_BASE_URL}/api/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { LayoutGrid, AlertTriangle, Tag, Globe, ChevronDown, ChevronRight, Zap, RefreshCw, Users } from "lucide-react";
 import { AnimatedMetricCard } from "../components/AnimatedMetricCard";
+import { API_BASE_URL } from "../lib/api";
 
 interface ClusterTicket {
   id: number;
@@ -45,7 +46,7 @@ export function Clusters() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8000/api/clusters");
+      const res = await fetch(`${API_BASE_URL}/api/clusters`);
       if (!res.ok) throw new Error(`API error ${res.status}`);
       const data: Cluster[] = await res.json();
       setClusters(data);

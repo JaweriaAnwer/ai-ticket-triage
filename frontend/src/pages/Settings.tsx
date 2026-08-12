@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Database, RefreshCw, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { FloatingTicketCard } from "../components/FloatingTicketCard";
+import { API_BASE_URL } from "../lib/api";
 
 interface Integration {
   id: string;
@@ -81,7 +82,7 @@ export function Settings() {
     setSyncStates(prev => ({ ...prev, [integration.id]: { status: "syncing", imported: 0 } }));
 
     try {
-      const res = await fetch("http://localhost:8000/api/integrations/github/sync", {
+      const res = await fetch(`${API_BASE_URL}/api/integrations/github/sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ repository: integration.repo, limit: 5 })
@@ -167,11 +168,16 @@ export function Settings() {
 
               {/* Status feedback */}
               {state.status === "success" && (
-                <div className="mt-3 flex items-center gap-2 text-xs text-emerald-400 bg-emerald-400/10 p-2.5 rounded-md border border-emerald-400/20 relative z-10 animate-in fade-in zoom-in-95">
-                  <CheckCircle2 size={14} />
-                  {state.imported > 0
-                    ? `${state.imported} new issue${state.imported > 1 ? "s" : ""} imported and analyzed`
-                    : "Already up to date — no new issues found"}
+                <div className="mt-3 flex items-center justify-between text-xs text-emerald-400 bg-emerald-400/10 p-2.5 rounded-md border border-emerald-400/20 relative z-10 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={14} />
+                    {state.imported > 0
+                      ? `${state.imported} new issue${state.imported > 1 ? "s" : ""} imported and analyzed`
+                      : "Already up to date — no new issues found"}
+                  </div>
+                  <a href="/app" className="font-medium hover:text-emerald-300 underline underline-offset-2 transition-colors">
+                    View in Inbox &rarr;
+                  </a>
                 </div>
               )}
               {state.status === "error" && (
