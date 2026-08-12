@@ -18,6 +18,14 @@ router = APIRouter(
 SETTINGS_FILE = "n8n_settings.json"
 
 def get_n8n_webhook_url():
+    # 1. Env var takes priority — survives redeploys, set once in Render dashboard.
+    env_url = os.getenv("N8N_WEBHOOK_URL")
+    if env_url:
+        return env_url
+
+    # 2. Fall back to the settings file (set via the /n8n/webhook POST endpoint).
+    #    Note: on Render's free tier this file resets on every redeploy, so it's
+    #    best treated as a temporary override rather than the primary source.
     if os.path.exists(SETTINGS_FILE):
         try:
             with open(SETTINGS_FILE, "r") as f:
