@@ -4,9 +4,11 @@ sqlalchemy
 psycopg2-binary
 redis
 openai
-groq
 pydantic
 pydantic-settings
 alembic
 pgvector
 requests
+groq
+google-genai
+python-dotenv
