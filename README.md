@@ -1,41 +1,49 @@
 # Nova: AI-Powered Engineering Ticket Triage 🚀
 
-Nova is a comprehensive, intelligent platform designed to unify and triage engineering support tickets across multiple sources (GitHub, Zendesk, Jira, Intercom, etc.). By leveraging advanced semantic clustering and AI-driven classification, Nova helps engineering teams slice through the noise and focus on what truly matters: resolving critical issues and shipping features.
+Nova is a comprehensive, intelligent platform designed to unify and triage engineering support tickets across multiple sources (starting with GitHub, extensible to Zendesk, Jira, Intercom, etc.). By leveraging AI-driven classification, semantic clustering, and workflow automation, Nova helps engineering teams cut through the noise and focus on what truly matters: resolving critical issues and shipping features.
+
+## 🔗 Live Deployment
+
+| Service | URL | Hosted On |
+|---|---|---|
+| **App (Frontend)** | [ai-ticket-triage-nine.vercel.app](https://ai-ticket-triage-nine.vercel.app) | Vercel |
+| **API (Backend)** | [ai-ticket-triage-2gwr.onrender.com](https://ai-ticket-triage-2gwr.onrender.com) | Render |
+| **Automation Engine** | [n8n-te3z.onrender.com](https://n8n-te3z.onrender.com) | Render (n8n, Docker image) |
+| **Database** | Managed PostgreSQL with `pgvector` | Supabase |
 
 ## 🏗️ Architecture
 
-```text
-┌──────────────────────────────────────────────────────┐
-│                    React Frontend                    │
-│    (Vite + React 19 + Tailwind + Framer Motion)      │
-│   Landing Page │ Global Inbox │ Semantic Clusters    │
-└────────────┬────────────┬────────────┬───────────────┘
-             │  REST API  │            │
-             ▼            ▼            ▼
-┌──────────────────────────────────────────────────────┐
-│                  Python Backend                      │
-│                                                      │
-│  ┌─────────────┐  ┌──────────────┐  ┌─────────────┐  │
-│  │ AI Routing  │  │  Sentiment   │  │  Semantic   │  │
-│  │   Service   │  │   Analyzer   │  │  Clustering │  │
-│  │ (Categorize)│  │  (Urgency)   │  │ (Embeddings)│  │
-│  └──────┬──────┘  └──────┬───────┘  └──────┬──────┘  │
-│         │                │                 │         │
-│         ▼                ▼                 ▼         │
-│  ┌─────────────────────────────────────────────────┐ │
-│  │      Vector Search Engine & Data Access         │ │
-│  │      (Cosine similarity & aggregations)         │ │
-│  └─────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │   Database Layer    │
-              │   PostgreSQL DB     │
-              │   with pgvector     │
-              │ Ticket Embeddings   │
-              └─────────────────────┘
+```mermaid
+flowchart TB
+    FE["React Frontend<br/>Vite + React 19 + Tailwind + Framer Motion<br/>Landing Page · Global Inbox · Semantic Clusters<br/><b>Deployed on Vercel</b>"]
+
+    subgraph BE["Python Backend (FastAPI) — Deployed on Render"]
+        direction TB
+        AI["AI Routing Service<br/>Groq / Llama-3"]
+        SENT["Sentiment Analyzer<br/>Urgency scoring"]
+        CLUSTER["Semantic Clustering<br/>Gemini Embeddings"]
+        VEC["Vector Search Engine & Data Access<br/>Cosine similarity & aggregations"]
+        AI --> VEC
+        SENT --> VEC
+        CLUSTER --> VEC
+    end
+
+    DB[("Database Layer<br/>PostgreSQL (Supabase)<br/>+ pgvector<br/>Ticket Embeddings")]
+
+    subgraph AUTO["Automation Layer — n8n (Render, Docker)"]
+        direction TB
+        HOOK["Webhook → Triage → Route"]
+        SPAM["Spam → auto-close ticket"]
+        URGENT["High urgency → email alert (Gmail)"]
+        HOOK --> SPAM
+        HOOK --> URGENT
+    end
+
+    FE -- "REST API (HTTPS)" --> BE
+    BE --> DB
+    BE -- "ticket webhook" --> AUTO
 ```
+
 
 ## 🎯 The Problem
 
@@ -46,25 +54,40 @@ Engineering teams are constantly bombarded by bug reports, feature requests, and
 
 ## 💡 The Solution (How it Works)
 
-Nova solves this by acting as a **Universal Semantic Inbox**. 
+Nova solves this by acting as a **Universal Semantic Inbox** with an automated response layer.
 
-1. **Ingestion**: A Python backend (using FastAPI/Flask) continuously ingests raw tickets from your configured sources.
-2. **AI Enrichment**: Each ticket is instantly analyzed by a Large Language Model to extract its summary, determine its category (Bug, Feature, Question, Spam), assess its urgency, and calculate a sentiment score.
-3. **Semantic Clustering**: Using `pgvector` and cosine similarity search in a PostgreSQL database, Nova groups incoming tickets into "Issue Clusters". If a payment failure is reported in a Zendesk email and a GitHub issue, Nova semantically links them together as a single problem.
-4. **Dynamic Interface**: A stunning, glassmorphic React/Vite frontend (powered by Framer Motion and Velora UI) provides a real-time, unified dashboard for engineers to view clustered issues, monitor global metrics, and seamlessly drill down into ticket details.
+1. **Ingestion**: The FastAPI backend ingests tickets — currently via a live GitHub Issues sync (`/api/integrations/github/sync`), pulling and processing real issues from any public repo on demand.
+2. **AI Enrichment**: Each ticket is analyzed by an LLM (Groq / Llama-3) to extract its summary, determine its category (`bug`, `feature`, `question`, `spam`), assess urgency (`low`, `medium`, `high`), and calculate a sentiment score.
+3. **Semantic Embeddings**: Each ticket's text is embedded via Google Gemini and stored in PostgreSQL using `pgvector`, enabling cosine-similarity search to surface related/duplicate tickets (`/api/tickets/{id}/similar`).
+4. **Automated Triage (n8n)**: Every new ticket fires a webhook to a dedicated n8n workflow, which:
+   - Automatically closes tickets classified as `spam` via the backend's `/ignore` endpoint — no human involvement needed.
+   - Sends a real-time email alert (via Gmail) for any ticket flagged `urgency: high`, so nothing critical sits unnoticed.
+5. **Dynamic Interface**: A glassmorphic React/Vite frontend (Framer Motion + Velora UI components) provides a real-time, unified dashboard to view tickets, monitor global metrics, and drill into clusters and details.
 
 ## 🚀 Features
-- **Global Inbox**: One beautiful view for all tickets, regardless of origin.
-- **Automated Categorization**: Real-time AI classification of urgency and category.
-- **Semantic Grouping**: `pgvector`-powered grouping of related issues.
+
+- **Global Inbox**: One unified view for all tickets, regardless of origin.
+- **Automated Categorization**: Real-time AI classification of urgency, category, and sentiment.
+- **Semantic Similarity Search**: `pgvector`-powered lookup of related issues per ticket.
+- **Automated Workflows (n8n)**: Spam auto-closure and urgent-ticket email alerts, fully configurable from the app's Automations page.
 - **Analytics Dashboard**: Real-time visualization of ticket volume, sentiment trends, and urgency distribution.
-- **Dark Aurora Theme**: A premium, highly animated UI designed for focus and clarity.
+- **Dark Aurora Theme**: A premium, animated UI designed for focus and clarity.
+
+## 🧱 Tech Stack
+
+- **Frontend**: React 19, Vite, TypeScript, Tailwind CSS, Framer Motion, Recharts — deployed on Vercel
+- **Backend**: FastAPI, SQLAlchemy, Alembic — deployed on Render
+- **Database**: PostgreSQL + `pgvector` extension — hosted on Supabase (accessed via the IPv4-compatible connection pooler)
+- **AI**: Groq (Llama-3) for ticket classification, Google Gemini for text embeddings
+- **Automation**: n8n (self-hosted Docker image on Render) for webhook-driven triage and email notifications
+- **Ingestion**: GitHub REST API (public, no auth required)
 
 ## 🔮 Future Improvements (With More Time)
 
-If given more time to expand the platform, I would add the following capabilities:
-1. **Two-Way Sync**: Push status updates and engineer comments directly back to the source platforms (e.g., closing the GitHub issue automatically closes the linked Zendesk ticket).
-2. **AI-Drafted Responses**: Auto-generate initial response drafts based on the semantic cluster's history and internal documentation.
-3. **Authentication & RBAC**: Implement NextAuth or Clerk for secure logins, team management, and role-based access control.
-4. **Webhooks Integration**: Move from polling to real-time webhook ingestion for instant triage.
-5. **Performance Optimization**: Lazy-load the heavy background animations or provide a "reduced motion" mode for lower-end devices to conserve GPU usage.
+1. **Two-Way Sync**: Push status updates and engineer comments directly back to source platforms (e.g., closing the GitHub issue automatically closes the linked ticket in Nova).
+2. **AI-Drafted Responses**: Auto-generate initial response drafts based on a ticket's semantic neighbors and internal documentation.
+3. **Authentication & RBAC**: Add secure logins, team management, and role-based access control.
+4. **Broader Automation Coverage**: Extend the n8n workflow beyond spam/urgent branches to route `medium`-urgency tickets and category-specific notifications (e.g., feature requests to product, bugs to on-call).
+5. **Webhooks Over Polling**: Move ticket ingestion from on-demand GitHub sync to real-time webhook-driven ingestion, and add native connectors for Zendesk, Jira, and Intercom.
+6. **Resilience on Free-Tier Hosting**: Add a lightweight uptime pinger (or upgrade off free tier) to keep the n8n service warm, avoiding cold-start delays on time-sensitive alerts.
+7. **Performance Optimization**: Lazy-load heavy background animations or provide a "reduced motion" mode for lower-end devices.
