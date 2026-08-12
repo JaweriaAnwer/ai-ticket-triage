@@ -1,13 +1,22 @@
 from fastapi import FastAPI
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from routers import tickets, analytics, integrations, clusters
 
 app = FastAPI(title="Nova API", description="AI-Powered Engineering Triage", version="1.0.0")
 
-# Configure CORS for local development
+# Configure CORS.
+# Locally, this always includes Vite's default dev server (localhost:5173).
+# In production, set the FRONTEND_URL env var to your deployed Vercel URL,
+# e.g. https://nova-yourname.vercel.app  (no trailing slash).
+_allowed_origins = ["http://localhost:5173"]
+_frontend_url = os.getenv("FRONTEND_URL")
+if _frontend_url:
+    _allowed_origins.append(_frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite's default port
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

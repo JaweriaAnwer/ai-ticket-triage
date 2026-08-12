@@ -9,6 +9,7 @@ import json
 from database import get_db
 from models import Ticket
 from services.ai_service import nova_ai, groq_client, ANALYSIS_SYSTEM_PROMPT
+from routers.integrations import fire_n8n_webhook
 
 router = APIRouter(
     prefix="/api/tickets",
@@ -79,7 +80,10 @@ def create_ticket(ticket_data: TicketCreate, db: Session = Depends(get_db)):
     db.add(new_ticket)
     db.commit()
     db.refresh(new_ticket)
-    
+
+    # Notify n8n (if a webhook URL is configured) that a new ticket was ingested
+    fire_n8n_webhook(new_ticket)
+
     return new_ticket
 
 @router.get("/{ticket_id}/similar", response_model=List[TicketResponse])

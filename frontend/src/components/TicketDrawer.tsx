@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, Network, FileCode, CheckCircle2, AlertTriangle, Loader2, Copy, ExternalLink, EyeOff } from "lucide-react";
+import { API_BASE_URL } from "../lib/api";
 
 interface Ticket {
   id: number;
@@ -55,7 +56,7 @@ export function TicketDrawer({
   const handleIgnore = async () => {
     setIsIgnoring(true);
     try {
-      await fetch(`http://localhost:8000/api/tickets/${ticket.id}/ignore`, {
+      await fetch(`${API_BASE_URL}/api/tickets/${ticket.id}/ignore`, {
         method: "PATCH",
       });
       onIgnored?.(ticket.id);
@@ -72,7 +73,7 @@ export function TicketDrawer({
     setIsDrafting(true);
     setJiraDraft(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/tickets/${ticket.id}/draft-jira`, {
+      const res = await fetch(`${API_BASE_URL}/api/tickets/${ticket.id}/draft-jira`, {
         method: "POST",
       });
       const data: JiraDraft = await res.json();
@@ -107,7 +108,15 @@ ${jiraDraft.steps_to_reproduce.map((s, i) => `${i + 1}. ${s}`).join("\n")}
   };
 
   return (
-    <div className="absolute inset-y-0 right-0 w-[800px] bg-[var(--color-background)] border-l border-[var(--color-border)] shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-200">
+    <>
+      {/* Backdrop Overlay to hide table */}
+      <div 
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 animate-in fade-in duration-200"
+        onClick={onClose}
+      />
+      
+      {/* Drawer */}
+      <div className="fixed inset-y-0 right-0 w-[800px] bg-slate-950 border-l border-[var(--color-border)] shadow-[0_0_40px_rgba(0,0,0,0.5)] flex flex-col z-50 animate-in slide-in-from-right duration-200">
 
       {/* Drawer Header */}
       <div className="h-14 border-b border-[var(--color-border)] flex items-center justify-between px-6 bg-[var(--color-surface)]">
@@ -125,7 +134,7 @@ ${jiraDraft.steps_to_reproduce.map((s, i) => `${i + 1}. ${s}`).join("\n")}
       <div className="flex-1 flex overflow-hidden">
 
         {/* Left: Raw Ticket */}
-        <div className="w-1/2 p-6 border-r border-[var(--color-border)] overflow-y-auto">
+        <div className="w-1/2 p-6 bg-slate-950 border-r border-[var(--color-border)] overflow-y-auto">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Original Report</h3>
           <h2 className="text-xl font-medium mb-2">{ticket.summary || "Incoming Report"}</h2>
           <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)] mb-6">
@@ -264,5 +273,6 @@ ${jiraDraft.steps_to_reproduce.map((s, i) => `${i + 1}. ${s}`).join("\n")}
         </button>
       </div>
     </div>
+    </>
   );
 }
