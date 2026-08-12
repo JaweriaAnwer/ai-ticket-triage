@@ -9,7 +9,7 @@ interface AnimatedMetricCardProps {
 }
 
 export function AnimatedMetricCard({ title, value, trend, icon, highlight = false }: AnimatedMetricCardProps) {
-  const easeSmooth = [0.4, 0, 0.2, 1];
+  const easeSmooth = [0.4, 0, 0.2, 1] as const;
 
   return (
     <div className={`relative overflow-hidden p-4 rounded-xl border bg-[var(--color-surface)] ${highlight ? "border-red-500/30" : "border-[var(--color-border)]"}`}>
