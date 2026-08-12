@@ -11,9 +11,8 @@ function BarChartContent({ data }: { data: BarDataItem[] }) {
   const midValue = Math.ceil(maxValue / 2);
   
   // Easing presets based on the JSON
-  const easeSmooth = [0.4, 0, 0.2, 1]; // Approximation of smooth:standard
-  const easeOvershoot = [0.175, 0.885, 0.32, 1.275]; // Approximation of overshoot:standard
-  const easeNatural = [0.25, 0.1, 0.25, 1]; // Approximation of natural:standard
+  const easeSmooth = [0.4, 0, 0.2, 1] as const;
+  const easeOvershoot = [0.175, 0.885, 0.32, 1.275] as const;
   
   return (
     <motion.div

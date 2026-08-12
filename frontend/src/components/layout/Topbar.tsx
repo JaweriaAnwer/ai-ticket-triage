@@ -1,4 +1,4 @@
-import { Bell, Search, Command } from "lucide-react";
+import { Bell } from "lucide-react";
 import { AnimatedSearchBar } from "../AnimatedSearchBar";
 
 export function Topbar() {
