@@ -68,7 +68,7 @@ def fire_n8n_webhook(ticket: Ticket):
             "sentiment_score": ticket.sentiment_score,
             "source": ticket.source,
             "status": ticket.status,
-        }, timeout=3)
+        }, timeout=60)
         response.raise_for_status()
         return True
     except Exception as e:
@@ -102,7 +102,7 @@ def test_webhook():
         "sentiment_score": -0.85
     }
     try:
-        response = requests.post(url, json=mock_ticket, timeout=5)
+        response = requests.post(url, json=mock_ticket, timeout=60)
         response.raise_for_status()
         return {"message": "Success"}
     except Exception as e:
