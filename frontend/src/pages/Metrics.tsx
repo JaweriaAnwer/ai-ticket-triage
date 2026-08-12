@@ -1,8 +1,4 @@
 import { useState, useEffect } from "react";
-import { 
-  BarChart, Bar, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
-} from "recharts";
 import { Activity, AlertTriangle, MessageSquare } from "lucide-react";
 import { API_BASE_URL } from "../lib/api";
 import { AnimatedDonutChart } from "../components/AnimatedDonutChart";

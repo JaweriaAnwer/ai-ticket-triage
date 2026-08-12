@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { AuroraBackground } from "../components/AuroraBackground";
 
 export function Landing() {
-  const easeSmooth = [0.4, 0, 0.2, 1];
+  const easeSmooth: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
   return (
     <div className="relative min-h-screen bg-[var(--color-background)] overflow-hidden flex flex-col">

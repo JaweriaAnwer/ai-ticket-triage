@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Database, RefreshCw, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Database, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { FloatingTicketCard } from "../components/FloatingTicketCard";
 import { API_BASE_URL } from "../lib/api";
 

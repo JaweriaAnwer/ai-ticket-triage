@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Activity, Mail, Lock, Sparkles, CheckCircle2 } from "lucide-react";
+import { Activity } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { GridPattern } from "../components/velora/grid-pattern";
 import { AuroraBackground } from "../components/AuroraBackground";

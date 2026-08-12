@@ -1,0 +1,160 @@
+{
+  "name": "Nova Ticket Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nova-triage",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a1e11111-1111-4111-8111-111111111111",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 380],
+      "webhookId": "nova-triage"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-spam",
+              "leftValue": "={{ $json.body.category }}",
+              "rightValue": "spam",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a2e22222-2222-4222-8222-222222222222",
+      "name": "Is Spam?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [540, 220]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=http://localhost:8000/api/tickets/{{ $json.body.id.replace('T-', '') }}/ignore",
+        "options": {}
+      },
+      "id": "a3e33333-3333-4333-8333-333333333333",
+      "name": "Auto-Close Spam Ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [820, 140]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-urgent",
+              "leftValue": "={{ $json.body.urgency }}",
+              "rightValue": "high",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a4e44444-4444-4444-8444-444444444444",
+      "name": "Is Urgent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [540, 540]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-alert",
+              "name": "alertMessage",
+              "type": "string",
+              "value": "=\ud83d\udea8 URGENT ticket {{ $json.body.id }}: \"{{ $json.body.summary }}\" (category: {{ $json.body.category }}, sentiment: {{ $json.body.sentiment_score }})"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a5e55555-5555-4555-8555-555555555555",
+      "name": "Format Urgent Alert",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [820, 540]
+    },
+    {
+      "parameters": {},
+      "id": "a6e66666-6666-4666-8666-666666666666",
+      "name": "TODO: Send Email or Slack Here",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1080, 540]
+    },
+    {
+      "parameters": {
+        "content": "## Nova Ticket Triage\n\n**Spam branch:** calls Nova's own `/ignore` endpoint to auto-close spam tickets. Works out of the box, no credentials needed.\n\n**Urgent branch:** formats an alert message. Replace the 'TODO' NoOp node with a Gmail, Slack, or Discord node (using your own credentials) to actually send the alert.\n\nAll other tickets (not spam, not urgent) currently do nothing \u2014 add more branches as needed.",
+        "height": 260,
+        "width": 380
+      },
+      "id": "a7e77777-7777-4777-8777-777777777777",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [260, 700]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          { "node": "Is Spam?", "type": "main", "index": 0 },
+          { "node": "Is Urgent?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Is Spam?": {
+      "main": [
+        [ { "node": "Auto-Close Spam Ticket", "type": "main", "index": 0 } ],
+        []
+      ]
+    },
+    "Is Urgent?": {
+      "main": [
+        [ { "node": "Format Urgent Alert", "type": "main", "index": 0 } ],
+        []
+      ]
+    },
+    "Format Urgent Alert": {
+      "main": [
+        [ { "node": "TODO: Send Email or Slack Here", "type": "main", "index": 0 } ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "nova-local"
+  }
+}
