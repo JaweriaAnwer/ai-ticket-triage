@@ -14,7 +14,7 @@ const blobs = [
 export function AuroraBackground() {
   return (
     <div className="fixed inset-0 w-full h-full z-[-1] overflow-hidden bg-black pointer-events-none select-none">
-      {blobs.map((blob, index) => (
+      {blobs.map((blob) => (
         <motion.img
           key={blob.id}
           src={blob.url}

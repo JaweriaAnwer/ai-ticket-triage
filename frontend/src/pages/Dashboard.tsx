@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { AlertCircle, CheckCircle2, ChevronRight, Clock, MessageSquare, Tag, Zap, Plus, Filter } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronRight, MessageSquare, Tag, Zap, Plus, Filter } from "lucide-react";
 import { TicketDrawer } from "../components/TicketDrawer";
 import { CreateTicketModal } from "../components/CreateTicketModal";
 import { AnimatedMetricCard } from "../components/AnimatedMetricCard";

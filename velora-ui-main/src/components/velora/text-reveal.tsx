@@ -51,7 +51,7 @@ export function TextReveal({
                 opacity: 1,
                 y: 0,
                 filter: "blur(0px)",
-                transition: { duration: 0.45, ease: [0.21, 0.47, 0.32, 0.98] },
+                transition: { duration: 0.45, ease: [0.21, 0.47, 0.32, 0.98] as const, },
               },
             }}
           >

@@ -18,7 +18,8 @@ function LogoContent() {
         className="absolute left-0 top-0 h-full bg-white/5 z-0"
         initial={{ width: "0%" }}
         animate={{ width: "100%" }}
-        transition={{ duration: 0.3, ease: easeNatural }}
+        transition={{ duration: 0.3, const easeNatural = [0.25, 0.1, 0.25, 1] as const;
+ }}
       />
 
       {/* Exit Wipe (Right to Left) */}
@@ -26,7 +27,8 @@ function LogoContent() {
         className="absolute right-0 top-0 h-full bg-[var(--color-surface)] z-20 origin-right"
         initial={{ scaleX: 0 }}
         exit={{ scaleX: 1 }}
-        transition={{ duration: 0.3, ease: easeNatural }}
+        transition={{ duration: 0.3, const easeNatural = [0.25, 0.1, 0.25, 1] as const;
+ }}
       />
 
       <div className="relative z-10 flex items-center gap-1">
@@ -35,7 +37,8 @@ function LogoContent() {
           className="flex font-semibold tracking-wide text-lg text-white"
           initial={{ x: -10 }}
           animate={{ x: 0 }}
-          transition={{ duration: 0.72, delay: 0.65, ease: easeNatural }}
+          transition={{ duration: 0.72, delay: 0.65, const easeNatural = [0.25, 0.1, 0.25, 1] as const;
+ }}
         >
           {text.map((letter, i) => (
             <motion.span
@@ -45,7 +48,7 @@ function LogoContent() {
               transition={{ 
                 duration: 0.4, 
                 delay: 0.65 + (i * 0.05), // stagger
-                ease: easeSlowDown 
+                const easeSlowDown = [0.2, 0, 0, 1] as const; 
               }}
             >
               {letter}
@@ -66,7 +69,8 @@ function LogoContent() {
           transition={{
             times: [0, 0.16, 0.21, 0.33, 0.41], // Mapped to 0s, 0.5s, 0.65s, 1s, 1.25s inside a 3s total timeframe
             duration: 3.0,
-            ease: easeNatural
+            const easeNatural = [0.25, 0.1, 0.25, 1] as const;
+
           }}
           style={{ originX: 1 }}
         />

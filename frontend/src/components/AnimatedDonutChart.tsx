@@ -79,7 +79,8 @@ export function AnimatedDonutChart({ data, total }: { data: DonutDataItem[], tot
                 strokeDasharray={`${dash} ${circumference}`}
                 initial={{ strokeDashoffset: offset + dash }} // Start completely hidden
                 animate={{ strokeDashoffset: offset }} // Sweep to its correct slice
-                transition={{ duration: 3.3, delay: arcDelay, ease: easeNatural }}
+                transition={{ duration: 3.3, delay: arcDelay, const easeNatural = [0.25, 0.1, 0.25, 1] as const;
+ }}
                 strokeLinecap="butt"
               />
             );

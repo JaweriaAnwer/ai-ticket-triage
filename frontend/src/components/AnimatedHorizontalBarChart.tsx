@@ -61,7 +61,7 @@ export function AnimatedHorizontalBarChart({ data, title }: { data: HorizontalBa
 
       {/* Bars Container */}
       <div className="flex flex-col gap-4 w-full h-full justify-center">
-        {data.map((item, index) => {
+        {data.map((item) => {
           // Center-out staggering logic from the JSON (middle items first)
           const middleIndex = Math.floor(data.length / 2);
           const distFromCenter = Math.abs(index - middleIndex);
